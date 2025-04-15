@@ -1,7 +1,8 @@
 import pytest, requests
 from playwright.sync_api import sync_playwright
 from api_clients.tasks import TasksClient
-from utils.helpers import CLICKUP_HEADERS, CLICKUP_BASE_URL, CLICKUP_PAYLOAD
+from utils.helpers import CLICKUP_HEADERS, CLICKUP_BASE_URL, CLICKUP_PAYLOAD, CLICKUP_EMAIL, CLICKUP_PASSWORD
+from pages.login_page import LoginPage
 
 
 @pytest.fixture(scope="session")
@@ -35,7 +36,6 @@ def test_task(get_list_id):
 
     client.delete_task(task_id)
 
-
 @pytest.fixture(scope="session")
 def get_list_id():
     session = requests.Session()
@@ -66,3 +66,17 @@ def get_list_id():
     list_id = list_response.json()["lists"][0]["id"]
 
     return list_id
+
+@pytest.fixture
+def authorized_user():
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=False)
+        page = browser.new_page()
+        login_page = LoginPage(page)
+        login_page.login(CLICKUP_EMAIL, CLICKUP_PASSWORD)
+
+        yield page
+
+        page.click('[data-test="user-main-settings-menu__dropdown-toggle"]')
+        page.click('[data-test="dropdown-list-item__Log out"]')
+        browser.close()
