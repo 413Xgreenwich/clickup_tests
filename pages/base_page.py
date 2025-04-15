@@ -9,6 +9,9 @@ class BasePage:
 
     def _get_full_url(self):
         return f"{self.__BASE_URL}{self._endpoint}"
+    
+    def hover_over(self, selector):
+        self.page.locator(selector).hover()
 
     def navigate_to(self):
         full_url = self._get_full_url()

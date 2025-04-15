@@ -1,4 +1,3 @@
-from api_clients.tasks import TasksClient
 from utils.helpers import (
     CLICKUP_HEADERS,
     CLICKUP_PAYLOAD,
@@ -10,7 +9,7 @@ from utils.helpers import (
 
 def test_success_create_task(tasks_client, get_list_id):
     response = tasks_client.create_task(list_id=get_list_id, payload=CLICKUP_PAYLOAD)
-    assert response.status_code == 200
+    assert response.status_code == 200, "Задача не создана"
     task_id = response.json()["id"]
     cleanup = tasks_client.delete_task(task_id)
     assert cleanup.status_code == 204
@@ -31,6 +30,7 @@ def test_success_get_task(tasks_client, test_task, get_list_id):
     response = tasks_client.get_tasks(list_id=get_list_id)
     assert response.status_code == 200
     body = response.json()
+    print(body["tasks"][0]["id"])
     assert "tasks" in body, "Ответ не содержит список задач"
     assert any(t["id"] == test_task["id"] for t in body["tasks"]), "Созданная задача не найдена"
 
