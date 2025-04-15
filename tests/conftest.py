@@ -1,6 +1,7 @@
 import pytest, requests
 from playwright.sync_api import sync_playwright
-from utils.helpers import CLICKUP_HEADERS, CLICKUP_BASE_URL
+from api_clients.tasks import TasksClient
+from utils.helpers import CLICKUP_HEADERS, CLICKUP_BASE_URL, CLICKUP_PAYLOAD
 
 
 @pytest.fixture(scope="session")
@@ -17,6 +18,22 @@ def auth_session():
     session = requests.Session()
     session.headers.update(CLICKUP_HEADERS)
     return session
+
+@pytest.fixture
+def tasks_client():
+    return TasksClient(CLICKUP_BASE_URL)
+
+@pytest.fixture
+def test_task(get_list_id):
+    client = TasksClient(CLICKUP_BASE_URL)
+    
+    response = client.create_task(list_id=get_list_id, payload=CLICKUP_PAYLOAD)
+    task = response.json()
+    task_id = task["id"]
+
+    yield task
+
+    client.delete_task(task_id)
 
 
 @pytest.fixture(scope="session")
