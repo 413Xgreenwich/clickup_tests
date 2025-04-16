@@ -1,0 +1,1 @@
+{"uuid": "cb89738f-9708-4bc1-93ff-a0056a73599d", "children": ["9727fa03-3781-4ee1-b106-df78427d646f"], "befores": [{"name": "tasks_client", "status": "passed", "steps": [{"name": "Создание экземпляра TasksClient", "status": "passed", "start": 1744798873157, "stop": 1744798873157}], "start": 1744798873157, "stop": 1744798873157}], "start": 1744798873157, "stop": 1744798875004}

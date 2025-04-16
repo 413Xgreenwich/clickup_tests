@@ -19,3 +19,4 @@ class BaseAPIClient:
 
     def delete(self, endpoint, **kwargs):
         return self.session.delete(f"{self.base_url}{endpoint}", **kwargs)
+    

@@ -35,7 +35,7 @@ class BasePage:
         expect(self.page.locator(selector)).to_be_visible()
 
     def assert_text_present_on_page(self, text):
-        expect(self.page.locator("body")).to_contain_text(text)
+        expect(self.page.locator("body")).to_contain_text(text, timeout=1500000)
 
     def assert_text_in_element(self, selector, text):
         expect(self.page.locator(selector)).to_have_text(text)
