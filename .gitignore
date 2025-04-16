@@ -4,3 +4,15 @@
 # Виртуальное окружение Python
 .venv/
 
+# pytest / Playwright
+.pytest_cache/
+playwright-report/
+
+# Allure
+allure-results/
+allure-report/
+
+# VS Code и прочий кэш
+.vscode/
+__pycache__/
+*.py[cod]
