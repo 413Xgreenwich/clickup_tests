@@ -1,4 +1,4 @@
-import pytest, requests, allure
+import pytest, requests, allure, uuid
 from playwright.sync_api import sync_playwright
 from api_clients.tasks import TasksClient
 from utils.helpers import (
@@ -72,3 +72,8 @@ def sync_browser():
 @pytest.fixture
 def team_id(tasks_client):
     return tasks_client.get_first_workspace_id()
+
+
+@pytest.fixture
+def unique_task_name():
+    return f"TestTask_{uuid.uuid4().hex[:8]}"
