@@ -21,15 +21,16 @@ class TestTasks:
             )
         assert response.status_code == 200, "Задача не создана"
 
-        with allure.step("Проверяем ответ и удаляем задачу"):
-            task_id = response.json()["id"]
-            cleanup = tasks_client.delete_task(task_id)
-            assert cleanup.status_code == 204
-
+        with allure.step("Проверяем ответ"):
             body = response.json()
             assert "id" in body, "В ответе нет id созданной задачи"
             assert body["name"] == CLICKUP_PAYLOAD["name"], "Имя задачи не совпадает"
             assert body["status"]["status"] == "to do", "Статус задачи не соответствует"
+
+        with allure.step("Удаляем задачу (clean-up)"):
+            task_id = body["id"]
+            cleanup = tasks_client.delete_task(task_id)
+            assert cleanup.status_code == 204, "Не удалось удалить задачу"
 
     @allure.description("Проверка ошибок при создании задачи с невалидными данными")
     @pytest.mark.parametrize(
