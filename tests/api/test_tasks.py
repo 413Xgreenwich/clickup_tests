@@ -1,11 +1,12 @@
 import allure
+import pytest
 from utils.helpers import (
     CLICKUP_HEADERS,
     CLICKUP_PAYLOAD,
     CLICKUP_BAD_HEADERS,
     CLICKUP_POST_HEADER,
     CLICKUP_BAD_PAYLOAD,
-    CLICKUP_PAYLOAD_UPDATE
+    CLICKUP_PAYLOAD_UPDATE,
 )
 
 
@@ -15,7 +16,9 @@ class TestTasks:
     @allure.description("Проверка успешного создания задачи")
     def test_success_create_task(self, tasks_client, get_list_id):
         with allure.step("Создаём задачу"):
-            response = tasks_client.create_task(list_id=get_list_id, payload=CLICKUP_PAYLOAD)
+            response = tasks_client.create_task(
+                list_id=get_list_id, payload=CLICKUP_PAYLOAD
+            )
         assert response.status_code == 200, "Задача не создана"
 
         with allure.step("Проверяем ответ и удаляем задачу"):
@@ -28,15 +31,31 @@ class TestTasks:
             assert body["name"] == CLICKUP_PAYLOAD["name"], "Имя задачи не совпадает"
             assert body["status"]["status"] == "to do", "Статус задачи не соответствует"
 
-    @allure.description("Проверка ошибки при создании задачи без тела")
-    def test_fail_create_task(self, tasks_client, get_list_id):
-        with allure.step("Пытаемся создать задачу без тела запроса"):
-            response = tasks_client.create_task(list_id=get_list_id, payload=None)
-        assert response.status_code == 400
+    @allure.description("Проверка ошибок при создании задачи с невалидными данными")
+    @pytest.mark.parametrize(
+        "payload, expected_status, expected_error",
+        [
+            (None, 400, None),  # Без тела вообще
+            ({}, 400, None),  # Пустой json
+            ({"name": ""}, 400, None),  # Пустое имя
+            ({"invalid_key": "value"}, 400, None),  # Некорректный ключ
+        ],
+    )
+    def test_fail_create_task(
+        self, tasks_client, get_list_id, payload, expected_status, expected_error
+    ):
+        with allure.step(f"Пробуем создать задачу с payload={payload}"):
+            response = tasks_client.create_task(list_id=get_list_id, payload=payload)
+        assert response.status_code == expected_status
 
         with allure.step("Проверяем тело ответа на наличие ошибки"):
             body = response.json()
-            assert "err" in body or "error" in body, "Нет сообщения об ошибке в ответе"
+            if expected_error:
+                assert expected_error in str(body), f"Ошибка не совпадает: {body}"
+            else:
+                assert (
+                    "err" in body or "error" in body
+                ), "Нет сообщения об ошибке в ответе"
 
     @allure.description("Проверка получения списка задач")
     def test_success_get_task(self, tasks_client, create_and_delete_task, get_list_id):
@@ -47,9 +66,13 @@ class TestTasks:
         with allure.step("Проверяем наличие созданной задачи в списке"):
             body = response.json()
             assert "tasks" in body, "Ответ не содержит список задач"
-            assert any(t["id"] == create_and_delete_task["id"] for t in body["tasks"]), "Созданная задача не найдена"
+            assert any(
+                t["id"] == create_and_delete_task["id"] for t in body["tasks"]
+            ), "Созданная задача не найдена"
 
-    @allure.description("Проверка ошибки при получении задач с некорректными заголовками")
+    @allure.description(
+        "Проверка ошибки при получении задач с некорректными заголовками"
+    )
     def test_fail_get_task(self, tasks_client, get_list_id):
         with allure.step("Обновляем заголовки на некорректные"):
             tasks_client.session.headers.update(CLICKUP_BAD_HEADERS)
@@ -60,7 +83,9 @@ class TestTasks:
 
         with allure.step("Проверяем тело ошибки"):
             body = response.json()
-            assert body.get("err") == "Authorization header required", "Текст ошибки не совпадает с ожидаемым - Authorization header required"
+            assert (
+                body.get("err") == "Authorization header required"
+            ), "Текст ошибки не совпадает с ожидаемым - Authorization header required"
 
     @allure.description("Проверка успешного обновления задачи")
     def test_success_update_task(self, tasks_client, create_and_delete_task):
@@ -70,7 +95,9 @@ class TestTasks:
             tasks_client.session.headers.update(CLICKUP_POST_HEADER)
 
         with allure.step("Отправляем PUT-запрос на обновление задачи"):
-            response = tasks_client.update_task(task_id=task_id, payload=CLICKUP_PAYLOAD_UPDATE)
+            response = tasks_client.update_task(
+                task_id=task_id, payload=CLICKUP_PAYLOAD_UPDATE
+            )
         assert response.status_code == 200
 
         with allure.step("Проверяем тело ответа"):
@@ -86,12 +113,16 @@ class TestTasks:
             tasks_client.session.headers.update(CLICKUP_POST_HEADER)
 
         with allure.step("Отправляем PUT-запрос с несуществующим статусом"):
-            response = tasks_client.update_task(task_id=task_id, payload=CLICKUP_BAD_PAYLOAD)
+            response = tasks_client.update_task(
+                task_id=task_id, payload=CLICKUP_BAD_PAYLOAD
+            )
         assert response.status_code == 400
 
         with allure.step("Проверяем ошибку в теле ответа"):
             body = response.json()
-            assert body.get("err") == "Status does not exist", "Текст ошибки не совпадает с ожидаемым - Status does not exist"
+            assert (
+                body.get("err") == "Status does not exist"
+            ), "Текст ошибки не совпадает с ожидаемым - Status does not exist"
 
     @allure.description("Проверка успешного удаления задачи")
     def test_success_delete_task(self, tasks_client, create_and_delete_task):
@@ -103,9 +134,13 @@ class TestTasks:
 
         with allure.step("Проверяем, что задача действительно удалена"):
             check = tasks_client.get_tasks(list_id=create_and_delete_task["list"]["id"])
-            assert all(t["id"] != task_id for t in check.json()["tasks"]), "Задача не была удалена"
+            assert all(
+                t["id"] != task_id for t in check.json()["tasks"]
+            ), "Задача не была удалена"
 
-    @allure.description("Проверка ошибки при удалении задачи с некорректными заголовками")
+    @allure.description(
+        "Проверка ошибки при удалении задачи с некорректными заголовками"
+    )
     def test_fail_delete_task(self, tasks_client, create_and_delete_task, get_list_id):
         task_id = create_and_delete_task["id"]
 
@@ -114,9 +149,13 @@ class TestTasks:
 
         with allure.step("Пытаемся удалить задачу"):
             response = tasks_client.delete_task(task_id=task_id)
-        assert response.status_code == 400, "Удаление с некорректными заголовками прошло успешно — это ошибка"
+        assert (
+            response.status_code == 400
+        ), "Удаление с некорректными заголовками прошло успешно — это ошибка"
 
         with allure.step("Возвращаем заголовки и убеждаемся, что задача осталась"):
             tasks_client.session.headers.update(CLICKUP_HEADERS)
             task_list = tasks_client.get_tasks(list_id=get_list_id).json()
-            assert any(t["id"] == task_id for t in task_list["tasks"]), "Задача была удалена, хотя не должна была"
+            assert any(
+                t["id"] == task_id for t in task_list["tasks"]
+            ), "Задача была удалена, хотя не должна была"
