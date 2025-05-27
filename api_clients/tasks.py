@@ -1,6 +1,7 @@
 from api_clients.base_client import BaseAPIClient
 from utils.helpers import CLICKUP_HEADERS
 
+
 class TasksClient(BaseAPIClient):
     def __init__(self, base_url, headers=CLICKUP_HEADERS):
         super().__init__(base_url, headers)
@@ -16,10 +17,10 @@ class TasksClient(BaseAPIClient):
 
     def delete_task(self, task_id):
         return self.delete(f"/task/{task_id}")
-    
+
     def get_first_workspace_id(self):
-        return self.get(f"/team")
-    
+        return self.get("/team")
+
     def get_first_list_id(self):
 
         workspace_resp = self.get("/team")

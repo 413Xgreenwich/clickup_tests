@@ -1,4 +1,5 @@
-from playwright.sync_api import sync_playwright, expect
+from playwright.sync_api import expect
+
 
 class BasePage:
     __BASE_URL = "https://app.clickup.com/"
@@ -9,7 +10,7 @@ class BasePage:
 
     def _get_full_url(self):
         return f"{self.__BASE_URL}{self._endpoint}"
-    
+
     def hover_over(self, selector):
         self.page.locator(selector).hover()
 
@@ -44,5 +45,5 @@ class BasePage:
         expect(self.page.locator(selector)).to_have_value(expected_value)
 
     def assert_url_is_correct(self, url):
-        self.page.wait_for_load_state('load')
+        self.page.wait_for_load_state("load")
         expect(self.page).to_have_url(url)

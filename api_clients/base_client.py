@@ -1,7 +1,8 @@
 import requests
 
+
 class BaseAPIClient:
-    
+
     def __init__(self, base_url, headers=None):
         self.base_url = base_url
         self.session = requests.Session()
@@ -19,4 +20,3 @@ class BaseAPIClient:
 
     def delete(self, endpoint, **kwargs):
         return self.session.delete(f"{self.base_url}{endpoint}", **kwargs)
-    

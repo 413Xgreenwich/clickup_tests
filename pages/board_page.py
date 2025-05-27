@@ -1,5 +1,4 @@
 from pages.base_page import BasePage
-import api_clients.tasks
 
 
 class BoardPage(BasePage):

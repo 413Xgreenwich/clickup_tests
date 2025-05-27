@@ -7,7 +7,9 @@ from utils.helpers import CLICKUP_PAYLOAD
 class TestBoardTasks:
 
     @allure.description("Проверка создания задачи через API и удаления через UI")
-    def test_ui_delete_task(self, authorized_user, tasks_client, get_list_id, team_id, unique_task_name):
+    def test_ui_delete_task(
+        self, authorized_user, tasks_client, get_list_id, team_id, unique_task_name
+    ):
         with allure.step("Создаём задачу через API"):
             payload = CLICKUP_PAYLOAD.copy()
             payload["name"] = unique_task_name
@@ -23,10 +25,14 @@ class TestBoardTasks:
 
         with allure.step("Проверяем через API, что задача удалена"):
             tasks = tasks_client.get_tasks(list_id=get_list_id).json()["tasks"]
-            assert all(t["name"] != unique_task_name for t in tasks), "Задача не была удалена"
+            assert all(
+                t["name"] != unique_task_name for t in tasks
+            ), "Задача не была удалена"
 
     @allure.description("Проверка создания задачи через UI и удаления через API")
-    def test_ui_create_task(self, authorized_user, tasks_client, get_list_id, team_id, unique_task_name):
+    def test_ui_create_task(
+        self, authorized_user, tasks_client, get_list_id, team_id, unique_task_name
+    ):
         with allure.step("Переходим на вкладку доски"):
             board_page = BoardPage(authorized_user, team_id)
             board_page.go_to_board_tab()
@@ -39,12 +45,10 @@ class TestBoardTasks:
         assert response.status_code == 200
 
         body = response.json()
-        found_task = next((t for t in body["tasks"] if t["name"] == unique_task_name), None)
+        found_task = next(
+            (t for t in body["tasks"] if t["name"] == unique_task_name), None
+        )
         assert found_task is not None, "Задача не найдена по имени"
 
         with allure.step("Удаляем задачу через API"):
             tasks_client.delete_task(found_task["id"])
-
-
-
-

@@ -1,4 +1,7 @@
-import pytest, requests, allure, uuid
+import pytest
+import requests
+import allure
+import uuid
 from playwright.sync_api import sync_playwright
 from api_clients.tasks import TasksClient
 from utils.helpers import (
