@@ -77,3 +77,8 @@ def sync_browser():
     with allure.step("Закрытие браузера Playwright"):
         browser.close()
         playwright.stop()
+
+
+@pytest.fixture
+def team_id(tasks_client):
+    return tasks_client.get_first_workspace_id()

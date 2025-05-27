@@ -1,4 +1,5 @@
 from pages.base_page import BasePage
+import api_clients.tasks
 
 
 class BoardPage(BasePage):
@@ -10,9 +11,9 @@ class BoardPage(BasePage):
     TASK_DELETE_BUTTON = '[data-test="quick-actions-menu__delete-task"]'
 
 
-    def __init__(self, page):
+    def __init__(self, page, team_id):
         super().__init__(page)
-        self._endpoint = "90151068928/v/l/2kypr980-375"
+        self._endpoint = f"{team_id}/v/b/t/{team_id}"
 
     def go_to_board_tab(self):
         self.wait_for_selector_and_click(self.BOARD_BUTTON_SELECTOR)
