@@ -46,24 +46,16 @@ def get_list_id(tasks_client):
 
 
 @pytest.fixture
-def authorized_user():
-    with allure.step("Запуск браузера и выполнение авторизации через UI"):
-        playwright = sync_playwright().start()
-        browser = playwright.chromium.launch(headless=False)
-        page = browser.new_page()
-
+def authorized_user(sync_browser):
+    with allure.step("Создаём новую вкладку и логинимся через UI"):
+        page = sync_browser.new_page()
         login_page = LoginPage(page)
-
-        with allure.step("Вход в систему"):
-            login_page.login(CLICKUP_EMAIL, CLICKUP_PASSWORD)
-
-    yield page
-
-    with allure.step("Выход из аккаунта"):
-        page.click('[data-test="user-main-settings-menu__dropdown-toggle"]')
-        page.click('[data-test="dropdown-list-item__Log out"]')
-        browser.close()
-        playwright.stop()
+        login_page.login(CLICKUP_EMAIL, CLICKUP_PASSWORD)
+        yield page
+        with allure.step("Выход из аккаунта"):
+            page.click('[data-test="user-main-settings-menu__dropdown-toggle"]')
+            page.click('[data-test="dropdown-list-item__Log out"]')
+            page.close()
 
 
 @pytest.fixture(scope="session")
@@ -71,12 +63,10 @@ def sync_browser():
     with allure.step("Запуск браузера Playwright"):
         playwright = sync_playwright().start()
         browser = playwright.chromium.launch(headless=False, slow_mo=1000)
-
-    yield browser
-
-    with allure.step("Закрытие браузера Playwright"):
-        browser.close()
-        playwright.stop()
+        yield browser
+        with allure.step("Закрытие браузера Playwright"):
+            browser.close()
+            playwright.stop()
 
 
 @pytest.fixture
